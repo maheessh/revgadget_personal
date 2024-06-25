@@ -57,25 +57,27 @@ readTrace <- function(paths,
   read_data <- function(path, delim, check.names, ...) {
     ext <- tools::file_ext(path)
     if (ext == "json") {
-      # Read JSON file
-      json_data <- jsonlite::fromJSON(file = path)
+      # Read JSON lines file directly into a list
+      json_data <- stream_in(file(path), simplifyVector = FALSE)
       
-      # Extract specific fields from each JSON object
-      data <- lapply(json_data, function(obj) {
-        # Extract values for specific fields
-        values <- c(obj$Iteration, obj$Likelihood, obj$Posterior, obj$Prior,
-                    obj$alpha_morpho, obj$alpha_morpho2, obj$br_len_lambda,
-                    obj$rates_morpho, obj$rates_morpho2, obj$tree_length)
-        return(values)
-      })
+      # Initialize an empty dataframe with headers
+      headers <- c("Iteration", "Likelihood", "Posterior", "Prior",
+                   "alpha_morpho", "alpha_morpho2", "br_len_lambda",
+                   "rates_morpho1", "rates_morpho2", "tree_length")
+      data <- matrix(NA, nrow = length(headers), ncol = length(json_data))
       
-      # Convert to dataframe
-      data <- as.data.frame(do.call(rbind, data))
+      # Extract data from each JSON object
+      for (i in seq_along(json_data)) {
+        obj <- json_data[[i]]
+        data[, i] <- c(obj$Iteration, obj$Likelihood, obj$Posterior, obj$Prior,
+                       obj$alpha_morpho, obj$alpha_morpho2, obj$br_len_lambda,
+                       obj$rates_morpho[1], obj$rates_morpho2[1], obj$tree_length)
+      }
       
-      # Set column names
-      colnames(data) <- c("Iteration", "Likelihood", "Posterior", "Prior",
-                          "alpha_morpho", "alpha_morpho2", "br_len_lambda",
-                          "rates_morpho", "rates_morpho2", "tree_length")
+      # Convert to dataframe and transpose
+      data <- as.data.frame(data)
+      colnames(data) <- NULL
+      rownames(data) <- headers
       
       return(data)
     } else {
@@ -126,6 +128,13 @@ output <- readTrace(paths = c("simple/part_run_1.log", "simple/part_run_2.log"),
                     delim = "\t", 
                     burnin = 0.1, 
                     check.names = FALSE)
+
+# Display formatted output
+for (i in seq_along(output)) {
+  cat(paste("File", i, "\n"))
+  print(output[[i]], row.names = TRUE)
+  cat("\n")
+}
 
 
 print(output)
