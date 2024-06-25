@@ -57,7 +57,27 @@ readTrace <- function(paths,
   read_data <- function(path, delim, check.names, ...) {
     ext <- tools::file_ext(path)
     if (ext == "json") {
-      return(jsonlite::fromJSON(path))
+      # Read JSON file
+      json_data <- jsonlite::fromJSON(file = path)
+      
+      # Extract specific fields from each JSON object
+      data <- lapply(json_data, function(obj) {
+        # Extract values for specific fields
+        values <- c(obj$Iteration, obj$Likelihood, obj$Posterior, obj$Prior,
+                    obj$alpha_morpho, obj$alpha_morpho2, obj$br_len_lambda,
+                    obj$rates_morpho, obj$rates_morpho2, obj$tree_length)
+        return(values)
+      })
+      
+      # Convert to dataframe
+      data <- as.data.frame(do.call(rbind, data))
+      
+      # Set column names
+      colnames(data) <- c("Iteration", "Likelihood", "Posterior", "Prior",
+                          "alpha_morpho", "alpha_morpho2", "br_len_lambda",
+                          "rates_morpho", "rates_morpho2", "tree_length")
+      
+      return(data)
     } else {
       return(utils::read.table(
         file = path,
