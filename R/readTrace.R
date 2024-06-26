@@ -32,9 +32,10 @@ read_and_parse_json <- function(file_path) {
 # Function to unnest columns with multiple values
 unnest_multiple_values <- function(data) {
   data %>%
-    # Unnest the list columns with each value in a separate column
-    mutate(rates_morpho = map(rates_morpho, ~set_names(.x, paste0("rates_morpho_", seq_along(.x)))),
-           rates_morpho2 = map(rates_morpho2, ~set_names(.x, paste0("rates_morpho2_", seq_along(.x))))) %>%
+    mutate(
+      rates_morpho = map(rates_morpho, ~set_names(.x, paste0("rates_morpho_", seq_along(.x)))),
+      rates_morpho2 = map(rates_morpho2, ~set_names(.x, paste0("rates_morpho2_", seq_along(.x))))
+    ) %>%
     unnest_wider(rates_morpho) %>%
     unnest_wider(rates_morpho2)
 }
