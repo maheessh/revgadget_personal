@@ -121,8 +121,7 @@ readTrace <- function(paths,
   return(output)
 }
 
-# Example of how to call the function
-# Note: Replace "path_to_your_file1" and "path_to_your_file2" with actual file paths
+#how to call the function
 output <- readTrace(paths = c("simple/part_run_1.log", "simple/part_run_2.log"), 
                     format = "simple", 
                     delim = "\t", 
